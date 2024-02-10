@@ -25,7 +25,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     last_name = update.message.from_user.last_name
 
     #Student.objects.create(external_id=user_id, first_name=first_name, last_name=last_name)
-    await update.message.reply_text(f"Hello, {first_name}, your id is {user_id}")
+    await update.message.reply_text(f"Hello, {first_name}, {last_name} your id is {user_id}")
 
 
 DIRECTORY = Path(__file__).resolve().parent.parent.parent.parent
