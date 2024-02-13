@@ -26,11 +26,10 @@ class Student(models.Model):
         ("C1", "C1 Advanced"),
     ]
     first_name = models.CharField(max_length=100)
-    last_name = models.CharField( max_length=120)
+    last_name = models.CharField(null=True, blank=True, max_length=100)
     external_id = models.IntegerField(null=True, unique=True)
-    phone_number = models.IntegerField()
+    phone_number = models.IntegerField(null=True, blank=True)
     email = models.EmailField(blank=True)
-    date_of_birth = models.DateField(blank=True)
     english_level = models.CharField("choose your English level", max_length=2, choices=LANGUAGE_LEVELS, blank=True)
     countries_to_go = models.ManyToManyField(Country, blank=True)
     bio = models.TextField("Why do you want to join our language exchange program?", blank=True)

@@ -5,7 +5,7 @@ from app.internal.admin.admin_user import AdminUserAdmin
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
     pass
-    list_display = ["first_name", "last_name", "email", "english_level"]
+    list_display = ["first_name", "phone_number", "email",]
     filter_vertical = ["countries_to_go"]
     list_per_page = 10
 
@@ -16,5 +16,5 @@ class StudentAdmin(admin.ModelAdmin):
 class CountryAdmin(admin.ModelAdmin):
     pass
 
-admin.site.site_title = "Study English abroad"
-admin.site.site_header = "Study English abroad"
+admin.site.site_title = "English abroad"
+admin.site.site_header = "English abroad"
