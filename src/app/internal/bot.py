@@ -1,4 +1,3 @@
-import asyncio
 from pathlib import Path
 import sys
 import os
@@ -9,12 +8,10 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
 django.setup()
 
 import logging
-import telegram
-import telegram.ext
-from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton, ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters, ConversationHandler
 import environ
-from app.models import Student, Country
+from app.models import Student
 from asgiref.sync import sync_to_async
 
 logging.basicConfig( 
@@ -22,7 +19,7 @@ logging.basicConfig(
     level=logging.INFO
 )
 
-PHONE, EMAIL, WRONG_NUMBER = range(3)
+PHONE, EMAIL, LEVEL, MOTIVATION = range(4)
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.message.from_user.id
@@ -63,11 +60,6 @@ async def phone_number(update: Update, context: ContextTypes.DEFAULT_TYPE):
     student.phone_number = number_int
     await sync_to_async(Student.save)(student)
 
-    # # convert function save to asynchronous
-    # converted_fun = sync_to_async(student.save)
-    # # call converted function with no arguments
-    # await converted_fun()
-
     await update.message.reply_text(
         f"Thank you! What's your email?"
         )
@@ -82,30 +74,106 @@ async def email(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await sync_to_async(Student.save)(student)
     
     await update.message.reply_text(
-        f"Thank you! Tell us, what is your English level?"
+        f"Thank you for your email!\n\nNow click /english_level to choose your level of English."
         )
+    
+    return ConversationHandler.END
     
 async def me(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.from_user.id
-    me_information = await sync_to_async(lambda:(Student.objects.filter)(external_id=user_id).values("phone_number", "email", "external_id").first())()
+    if not await ensure_phone_set(update, context):
+        return
     
+    user_id = update.message.from_user.id
+    user = await sync_to_async(Student.objects.get)(external_id=user_id)    
 
-    if me_information:
-        phone_number = me_information["phone_number"]
-        email = me_information["email"]
-        personal_id = me_information["external_id"] 
+    email = user.email
+    
+    if email == "":
+        email = "(not set)"
+
+    level = user.english_level
+    if level == "":
+        level = "(not set)"
+
+    motivation = user.bio
+    if motivation == "":
+        motivation = "(not set)"
+
+    await update.message.reply_text(
+        f"""
+Here is the information we got from you:
+
+Your unique id: {user.external_id}
+Phone number: {user.phone_number}
+Your email: {email}
+Your language level: {level}
+Motivationa letter: {motivation}
+        """
+    )
+
+async def english_level(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not await ensure_phone_set(update, context):
+        return ConversationHandler.END
+    
+    reply_keyboard = [["A1", "A2", "B1", "B2", "C1"]]
+
+    await update.message.reply_text(
+        "What's your English level?",
+        reply_markup=ReplyKeyboardMarkup(
+            reply_keyboard, one_time_keyboard=True, input_field_placeholder="Your English level?"
+        ),
+    )
+
+    return LEVEL
+
+async def level_set(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_answer = update.message.text
+    user_id = update.message.from_user.id
+
+    user = await sync_to_async(Student.objects.get)(external_id=user_id)
+    user.english_level=user_answer
+    await sync_to_async(Student.save)(user)
+
+    await update.message.reply_text(
+        "That's great! Tell us why do you want to learn language abroad?"
+    )
+
+    return MOTIVATION
+
+async def why_abroad(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    motivation = update.message.text
+    user_id = update.message.from_user.id
+
+    user = await sync_to_async(Student.objects.get)(external_id=user_id)
+    user.bio=motivation
+    await sync_to_async(Student.save)(user)
+
+    await update.message.reply_text(
+        """
+Amazing! You are registered, we will contact you soon!
         
-        if email == "":
-            email = "(not set)"
+Press /me to check the information you provided :)
+        """
+    )
 
+    return ConversationHandler.END
+
+
+async def ensure_phone_set(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user_id = update.message.from_user.id
+    user = await sync_to_async(Student.objects.get)(external_id=user_id)
+
+    if user.phone_number is None:
         await update.message.reply_text(
-            f"Here is the information we got from you:\n\nYour unique id: {personal_id}\n\nPhone number: {phone_number}\n\nYour email: {email}"
+            "Please, complete the registration by providing your phone number first."
         )
-
+        return False
+    
+    return True
 
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "Bye! I hope we can talk again some day.",
+        "Alright, I hope to see you soon.",
     )
 
     return ConversationHandler.END
@@ -129,11 +197,21 @@ def main() -> None:
         },
         fallbacks=[CommandHandler("cancel", cancel)],
     )
+    english_handler = ConversationHandler(
+        entry_points=[CommandHandler('english_level', english_level)],
+        states={
+            LEVEL: [MessageHandler(filters.Regex("^(A1|A2|B1|B2|C1)$") & ~filters.COMMAND, level_set)],
+            MOTIVATION: [MessageHandler(filters.TEXT & ~filters.COMMAND, why_abroad)]
+        },
+        fallbacks=[CommandHandler("cancel", cancel)],
+    )
     me_handler = CommandHandler('me', me)
+    
 
     application.add_handler(start_handler)
     application.add_handler(conv_handler)
     application.add_handler(me_handler)
+    application.add_handler(english_handler)
 
     application.run_polling()
 

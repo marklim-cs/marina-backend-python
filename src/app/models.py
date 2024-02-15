@@ -1,21 +1,6 @@
 from app.internal.models.admin_user import AdminUser
 from django.db import models 
 
-class Country(models.Model):
-    COUNTRIES_OF_MOBILITY = [
-        ("MT", "Malta"),
-        ("UK", "United Kingdom"),
-        ("FI", "Finland"), 
-        ("DE", "Germany"),
-    ]
-    countries_to_go = models.CharField(max_length=2, choices=COUNTRIES_OF_MOBILITY)
-
-    def __str__(self):
-        return f"{self.countries_to_go}"
-    
-    class Meta:
-        verbose_name = "Country"
-        verbose_name_plural = "Countries"
 
 class Student(models.Model):
     LANGUAGE_LEVELS = [
@@ -31,7 +16,6 @@ class Student(models.Model):
     phone_number = models.IntegerField(null=True, blank=True)
     email = models.EmailField(blank=True)
     english_level = models.CharField("choose your English level", max_length=2, choices=LANGUAGE_LEVELS, blank=True)
-    countries_to_go = models.ManyToManyField(Country, blank=True)
     bio = models.TextField("Why do you want to join our language exchange program?", blank=True)
 
 
