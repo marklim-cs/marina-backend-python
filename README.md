@@ -1,1 +1,1 @@
-# Template for backend course# marina-backend-python
+# Тестовое задание на Backend курс 2024 
