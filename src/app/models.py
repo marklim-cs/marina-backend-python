@@ -1,27 +1,35 @@
 from app.internal.models.admin_user import AdminUser
 from django.db import models 
 
+class Account(models.Model):
+    account_number = models.IntegerField(null=True, blank=True)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
 
-class Student(models.Model):
-    LANGUAGE_LEVELS = [
-        ("A1", "A1 Beginner"),
-        ("A2", "A2 Elementary"),
-        ("B1", "B1 Intermediate"),
-        ("B2", "B2 Upper-Intermediate"),
-        ("C1", "C1 Advanced"),
-    ]
+    def __str__(self):
+        return f"{self.account_number}"
+
+class Client(models.Model):
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(null=True, blank=True, max_length=100)
     external_id = models.IntegerField(null=True, unique=True)
     phone_number = models.IntegerField(null=True, blank=True)
     email = models.EmailField(blank=True)
-    english_level = models.CharField("choose your English level", max_length=2, choices=LANGUAGE_LEVELS, blank=True)
-    bio = models.TextField("Why do you want to join our language exchange program?", blank=True)
-
+    account = models.OneToOneField(Account, on_delete=models.CASCADE, null=True, blank=True, related_name="client_account")
 
     def __str__(self):
-        return f"{self.first_name}"
+        return f"{self.external_id}, {self.first_name}"
     
     class Meta:
-        verbose_name = "Student"
-        verbose_name_plural = "Students"
+        verbose_name = "Client"
+        verbose_name_plural = "Clients"
+
+    
+class Card(models.Model):
+    card_number = models.IntegerField(null=True, blank=True)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.card_number}"
+    
+
+

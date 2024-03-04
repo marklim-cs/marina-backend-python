@@ -1,0 +1,38 @@
+
+version: "3.8"
+services:
+  app: 
+    container_name: app_contnr
+    build: 
+      context: .
+      dockerfile: Dockerfile.app
+    command: python manage.py runserver 0.0.0.0:8080
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/src
+    links:
+      - db
+
+  db:
+    container_name: sqlite-contnr
+    image: alpine
+    volumes:
+      - sqlite-data:/marina-backend-course
+    #restart: always
+    command: sh -c "apk add --no-cache sqlite && sqlite3 /sqlite-data/database.db"
+
+
+  bot:
+    container_name: bot_contnr
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    env_file:
+      - .env 
+    command: python /bot/src/app/internal/bot.py
+    volumes: 
+      - ./src:/src
+    
+volumes:
+  sqlite-data:

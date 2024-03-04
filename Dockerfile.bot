@@ -1,0 +1,9 @@
+FROM python:3.12.1
+ENV PYTHONUNBUFFERED=1
+ENV PIPENV_VENV_IN_PROJECT=1
+WORKDIR /bot
+COPY Pipfile Pipfile.lock /bot/
+RUN pip install pipenv && pipenv install --system --deploy --ignore-pipfile
+COPY . /bot
+WORKDIR /bot/src
+CMD ["python /bot/src/app/internal/bot.py"]

@@ -34,7 +34,7 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "0.0.0.0"]
 
 
 # Application definition
@@ -89,16 +89,6 @@ DATABASES = {
     }
 }
 
-#DATABASES = {
-#   "default": {
-#       "ENGINE": "django.db.backends.postgresql",
-#       "NAME": "postgres",
-#       "USER": "postgres",
-#       "PASSWORD": "postgrespostgres",
-#        "HOST": "localhost",
-#      "PORT": "5432",
-#   }
-#}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

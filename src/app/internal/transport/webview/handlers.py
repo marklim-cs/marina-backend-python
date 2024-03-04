@@ -1,11 +1,11 @@
 from django.http import HttpResponse
 from django.views import View
 
-from app.models import Student
+from app.models import Client
 
 class MeViewHtml(View):
     def get(self, request, id: int):
-        user = Student.objects.get(external_id=id)
+        user = Client.objects.get(external_id=id)
 
         html = f"""
         <html>

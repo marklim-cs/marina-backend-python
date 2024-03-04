@@ -36,3 +36,10 @@ check_lint:
 	isort --check --diff .
 	flake8 --config setup.cfg
 	black --check --config pyproject.toml .
+
+#Docker
+up:
+	docker-compose up
+
+down:
+	docker-compose down

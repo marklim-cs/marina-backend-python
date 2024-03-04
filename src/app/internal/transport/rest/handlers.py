@@ -1,13 +1,13 @@
 from django.http import JsonResponse
 from django.views import View
 
-from app.models import Student
+from app.models import Client
 
 
 
 class MeView(View):
     def get(self, request, id: int):
-        user = Student.objects.get(external_id=id)
+        user = Client.objects.get(external_id=id)
         user_data = dict(
             phone_number = user.phone_number,
             email = user.email,
